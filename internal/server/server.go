@@ -82,6 +82,7 @@ func (s *Server) Routes() http.Handler {
 	r.Get("/healthz", s.handleHealth)
 	r.Get("/v1/tools", s.handleTools)
 	r.Post("/v1/tools/{toolName}", s.handleToolCall)
+	r.Get("/api/*", s.handleLegacyAPIPassthrough)
 	return r
 }
 
@@ -171,6 +172,37 @@ func (s *Server) handleToolCall(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s.writeSuccess(w, toolName, prepared.Path, resp.Body, resp.Header, false)
+}
+
+func (s *Server) handleLegacyAPIPassthrough(w http.ResponseWriter, r *http.Request) {
+	resp, err := s.kpl.Do(r.Context(), kplclient.Request{
+		Method: http.MethodGet,
+		Path:   r.URL.Path,
+		Query:  r.URL.Query(),
+	})
+	if err != nil {
+		var upstream *kplclient.UpstreamError
+		if errors.As(err, &upstream) {
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			w.WriteHeader(upstream.StatusCode)
+			_, _ = w.Write(upstream.Body)
+			return
+		}
+		writeJSON(w, http.StatusBadGateway, map[string]any{
+			"ok":      false,
+			"error":   "upstream_error",
+			"message": err.Error(),
+		})
+		return
+	}
+	for key, values := range resp.Header {
+		for _, value := range values {
+			w.Header().Add(key, value)
+		}
+	}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(resp.StatusCode)
+	_, _ = w.Write(resp.Body)
 }
 
 func (s *Server) writeSuccess(w http.ResponseWriter, toolName string, path string, data json.RawMessage, header http.Header, cached bool) {

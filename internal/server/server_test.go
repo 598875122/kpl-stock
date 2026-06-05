@@ -171,6 +171,36 @@ func TestUpstreamErrorEnvelope(t *testing.T) {
 	}
 }
 
+func TestLegacyAPIPassthrough(t *testing.T) {
+	kpl := &fakeKPL{
+		resp: kplclient.Response{
+			StatusCode: http.StatusOK,
+			Header: http.Header{
+				"X-Ratelimit-Remaining": {"9999"},
+			},
+			Body: json.RawMessage(`{"items":[{"code":"002384"}]}`),
+		},
+	}
+	srv := newTestServer(t, kpl)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/stock/bigorder/002384?date=20260605", nil)
+	rec := httptest.NewRecorder()
+	srv.Routes().ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d body=%s", rec.Code, rec.Body.String())
+	}
+	if got := strings.TrimSpace(rec.Body.String()); got != `{"items":[{"code":"002384"}]}` {
+		t.Fatalf("body = %s", got)
+	}
+	if kpl.last.Path != "/api/stock/bigorder/002384" || kpl.last.Query.Get("date") != "20260605" {
+		t.Fatalf("unexpected upstream request: path=%s query=%s", kpl.last.Path, kpl.last.Query.Encode())
+	}
+	if rec.Header().Get("X-Ratelimit-Remaining") != "9999" {
+		t.Fatalf("upstream header not forwarded: %v", rec.Header())
+	}
+}
+
 func jsonBody(s string) *strings.Reader {
 	return strings.NewReader(s)
 }
