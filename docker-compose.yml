@@ -1,0 +1,27 @@
+services:
+  kpl-adapter:
+    build:
+      context: .
+    image: stock-kpl-adapter:local
+    container_name: stock-kpl-adapter
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      KPL_BASE_URL: ${KPL_BASE_URL:-http://124.222.49.67:3000}
+      KPL_LISTEN_ADDR: 0.0.0.0:8787
+      KPL_TIMEOUT_SECONDS: ${KPL_TIMEOUT_SECONDS:-10}
+      KPL_CACHE_PATH: /data/kpl-cache.sqlite
+    ports:
+      - "127.0.0.1:8787:8787"
+    volumes:
+      - kpl-cache:/data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8787/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  kpl-cache:
