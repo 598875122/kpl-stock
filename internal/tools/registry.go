@@ -185,6 +185,8 @@ func DefaultRegistry() *Registry {
 	stockRange := []string{"startDate", "endDate", "limit"}
 	l2 := []string{"date", "time", "sortBy", "limit", "offset", "Type", "SortType", "Order", "FilterGem", "FilterTIB", "FilterMotherboard", "board", "fast", "response", "RStart", "REnd", "pageSize"}
 	auction := []string{"date", "limit", "sortBy", "source", "minAmount", "threshold", "type"}
+	auctionActiveSector := []string{"date", "limit", "sortBy", "source", "minAmount", "threshold", "type", "group"}
+	auctionActiveSectorStocks := []string{"date", "limit", "sortBy", "source", "filter"}
 	gray := []string{"date", "tab", "pageSize", "sortBy", "order", "format", "limit"}
 
 	defs := []Tool{
@@ -275,7 +277,9 @@ func DefaultRegistry() *Registry {
 		makeTool("auction.auction_net", "竞价净额主力净额兼容路径", "/api/auction/auction-net", "inst", "historical", []string{"date"}, auction),
 		makeTool("auction.sell_pressure", "竞价砸盘", "/api/auction/sell-pressure", "inst", "historical_or_realtime", nil, auction),
 		makeTool("auction.dump_stocks", "竞价砸盘兼容路径", "/api/auction/dump-stocks", "inst", "historical_or_realtime", nil, auction),
-		makeTool("auction.active_sectors", "板块竞价爆量异动金额", "/api/auction/active-sectors", "inst", "historical_or_realtime", nil, auction),
+		makeTool("auction.active_sectors", "板块竞价异动分组榜", "/api/auction/active-sectors", "inst", "historical_or_realtime", nil, auctionActiveSector),
+		makeTool("auction.active_sector_stocks", "板块竞价异动个股明细", "/api/auction/active-sectors/:sectorId/stocks", "inst", "historical_or_realtime", nil, auctionActiveSectorStocks),
+		makeTool("auction.sector_stocks", "板块竞价异动个股明细兼容路径", "/api/auction/sector-stocks/:sectorId", "inst", "historical_or_realtime", nil, auctionActiveSectorStocks),
 		makeTool("auction.active_stocks", "竞价活跃个股", "/api/auction/active-stocks", "inst", "realtime", nil, common),
 		makeTool("auction.dashboard", "竞价全景看板", "/api/auction/dashboard", "inst", "historical_or_realtime", nil, common),
 
