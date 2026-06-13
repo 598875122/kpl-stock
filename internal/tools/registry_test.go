@@ -49,3 +49,46 @@ func TestToolPrepareRejectsUnknownParameter(t *testing.T) {
 		t.Fatal("expected unknown parameter error")
 	}
 }
+
+func TestAuctionActiveSectorsChangelogParams(t *testing.T) {
+	registry := DefaultRegistry()
+	tool, ok := registry.Get("auction.active_sectors")
+	if !ok {
+		t.Fatal("missing auction.active_sectors")
+	}
+
+	prepared, err := tool.Prepare(map[string]any{
+		"group":  "continued",
+		"source": "derived",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if prepared.Query.Get("group") != "continued" {
+		t.Fatalf("group query missing")
+	}
+	if prepared.Query.Get("source") != "derived" {
+		t.Fatalf("source query missing")
+	}
+}
+
+func TestAuctionActiveSectorStocksTools(t *testing.T) {
+	registry := DefaultRegistry()
+	for _, name := range []string{"auction.active_sector_stocks", "auction.sector_stocks"} {
+		tool, ok := registry.Get(name)
+		if !ok {
+			t.Fatalf("missing %s", name)
+		}
+		prepared, err := tool.Prepare(map[string]any{
+			"sectorId": "BK0420",
+			"filter":   2,
+			"sortBy":   "auctionVolumeRatio",
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if prepared.Query.Get("filter") != "2" {
+			t.Fatalf("filter query missing for %s", name)
+		}
+	}
+}
