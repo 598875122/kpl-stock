@@ -1,62 +1,32 @@
 # stock-kpl
 
-Local Hermes HTTP adapter for the Kaipanla Quant API.
+Clean local SDK and CLI for Kaipanla Quant API calls used by Hermes cron jobs.
 
-## Run
+## Build
 
-Set the upstream API key and start the local adapter:
-
-```powershell
-$env:KPL_API_KEY = "sk_pro_xxxxxxxx"
-go run ./cmd/kpl-adapter
+```bash
+go build -o /usr/local/bin/kpl ./cmd/kpl
 ```
 
-Defaults:
+## Environment
 
-- `KPL_BASE_URL`: `http://124.222.49.67:3000`
-- `KPL_LISTEN_ADDR`: `127.0.0.1:8787`
-- `KPL_TIMEOUT_SECONDS`: `10`
-- `KPL_CACHE_PATH`: `./data/kpl-cache.sqlite`
-
-## Docker Compose
-
-Create `.env` from the example and set your API key:
-
-```powershell
-Copy-Item .env.example .env
-notepad .env
+```bash
+export KPL_API_KEY=***
+export KPL_BASE_URL=${KPL_BASE_URL:-http://124.222.49.67:3000}
+export KPL_TIMEOUT_SECONDS=${KPL_TIMEOUT_SECONDS:-10}
+export KPL_CACHE_PATH=${KPL_CACHE_PATH:-/root/kpl-stock/data/kpl-cache.sqlite}
 ```
 
-Start the adapter:
+## CLI
 
-```powershell
-docker compose up -d --build
+```bash
+kpl tools
+kpl call --tool stock.bigorder --args '{"code":"600183","date":"20260612"}'
+kpl bigorder --codes 600183,600584,601138 --args '{"date":"20260612"}' --workers 8
+kpl intraday --codes 600183,600584 --workers 8
+kpl path --path /api/auction/limit-bid --query 'limit=500'
 ```
 
-The service is available on `http://127.0.0.1:8787`. SQLite is stored in the named Docker volume `stock-kpl_kpl-cache` at `/data/kpl-cache.sqlite` inside the container.
+## Go SDK
 
-Useful commands:
-
-```powershell
-docker compose logs -f
-docker compose down
-docker compose down -v
-```
-
-## Hermes Calls
-
-List tools:
-
-```powershell
-Invoke-RestMethod http://127.0.0.1:8787/v1/tools
-```
-
-Call a tool:
-
-```powershell
-Invoke-RestMethod `
-  -Method Post `
-  -Uri http://127.0.0.1:8787/v1/tools/market.sentiment `
-  -ContentType application/json `
-  -Body '{"arguments":{"date":"20260430"}}'
-```
+Import `stock-kpl/pkg/kpllocal` inside Go jobs. Use `Call` for one request and `CallMany` for multi-stock concurrent requests.
