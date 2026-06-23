@@ -59,7 +59,9 @@ func TestAuctionActiveSectorsChangelogParams(t *testing.T) {
 
 	prepared, err := tool.Prepare(map[string]any{
 		"group":  "continued",
+		"list":   "list2",
 		"source": "derived",
+		"tab":    "other",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -69,6 +71,12 @@ func TestAuctionActiveSectorsChangelogParams(t *testing.T) {
 	}
 	if prepared.Query.Get("source") != "derived" {
 		t.Fatalf("source query missing")
+	}
+	if prepared.Query.Get("list") != "list2" {
+		t.Fatalf("list query missing")
+	}
+	if prepared.Query.Get("tab") != "other" {
+		t.Fatalf("tab query missing")
 	}
 }
 

@@ -185,7 +185,7 @@ func DefaultRegistry() *Registry {
 	stockRange := []string{"startDate", "endDate", "limit"}
 	l2 := []string{"date", "time", "sortBy", "limit", "offset", "Type", "SortType", "Order", "FilterGem", "FilterTIB", "FilterMotherboard", "board", "fast", "response", "RStart", "REnd", "pageSize"}
 	auction := []string{"date", "limit", "sortBy", "source", "minAmount", "threshold", "type"}
-	auctionActiveSector := []string{"date", "limit", "sortBy", "source", "minAmount", "threshold", "type", "group"}
+	auctionActiveSector := []string{"date", "limit", "sortBy", "source", "minAmount", "threshold", "type", "group", "list", "tab"}
 	auctionActiveSectorStocks := []string{"date", "limit", "sortBy", "source", "filter"}
 	gray := []string{"date", "tab", "pageSize", "sortBy", "order", "format", "limit"}
 
